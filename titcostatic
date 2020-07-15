@@ -1,0 +1,151 @@
+#!/usr/bin/env Rscript
+
+source("variables.R")
+at <- function(...) invisible(assertthat::assert_that(...))
+at(is.list(variables))
+at(file.exists("index.html"))
+
+replace_content <- function(x) {
+    assertthat::assert_that(length(x) == 1)
+    if (grepl(".html$", x))
+        x <- readLines(paste0("includes/", x))
+    paste0(x, collapse = "\n")
+}
+
+variables <- lapply(variables, replace_content)
+
+variables <- unlist(variables)
+patterns <- paste0("{{", names(variables), "}}")
+for (i in seq_along(patterns)) {
+    pattern <- patterns[i]
+    replacement <- variables[i]
+    variables <- gsub(pattern, replacement, variables, fixed = TRUE)
+}
+
+variables <- as.list(variables)
+
+## Get sections
+dirs <- list.dirs()
+exclude <- c("^.$", "./.git", "./content", "./scripts", "./includes", "./templates", "./build")
+dirs <- dirs[!grepl(paste0(exclude, collapse = "|"), dirs)]
+
+## Get section pages
+ignore <- c("*~$")
+pages <- unlist(lapply(dirs, list.files, full.names = TRUE))
+pages <- pages[!grepl(paste0(ignore, collapse = "|"), pages)]
+
+## Render pages
+temp.files <- sapply(seq_along(pages), function(x) tempfile(tmpdir = ".", fileext = ".md"))
+
+render_page <- function(i, pages, temp.files) {
+    page <- pages[i]
+    temp.file <- temp.files[i]
+    knitr::knit(page, temp.file)
+}
+
+lapply(seq_along(pages), render_page, pages, temp.files)
+
+imported <- lapply(temp.files, readLines)
+
+parse_markdown <- function(lines) {
+    parsed <- rmarkdown:::partition_yaml_front_matter(lines)
+    parsed$front_matter <- yaml::yaml.load(paste0(parsed$front_matter, collapse = "\n"))
+    parsed
+}
+
+parsed <- lapply(imported, parse_markdown)
+
+file.contents <- lapply(parsed, function(x) x$body)
+
+write_back <- function(i, new.content, temp.files) {
+    content <- new.content[[i]]
+    temp.file <- temp.files[i]
+    writeLines(content, temp.file)
+}
+
+invisible(lapply(seq_along(file.contents), write_back, file.contents, temp.files))
+
+invisible(lapply(temp.files, rmarkdown::render, output_format = "html_document", quiet = TRUE))
+
+temp.files.html <- gsub(".md$", ".html", temp.files)
+
+html.files <- lapply(temp.files.html, readLines)
+
+get_html_body <- function(lines) {
+    from <- grep("<body>", lines)
+    to <- grep("</body>", lines)
+    lines[(from + 1):(to - 1)]
+}
+
+html.bodies <- lapply(html.files, get_html_body)
+
+default.template <- "page.html"
+
+use_template <- function(i, parsed, html.bodies, html.files) {
+    page.variables <- parsed[[i]]$front_matter
+    page.variables$body <- html.bodies[[i]]
+    template.file <- page.variables$template
+    page.variables$template <- NULL
+    names(page.variables) <- paste0("page.", names(page.variables))
+    if (is.null(template.file))
+        template.file <- default.template
+    template <- new.html <- readLines(paste0("templates/", template.file))
+    patterns <- paste0("{{", names(page.variables), "}}")
+    for (j in seq_along(patterns)) {
+        pattern <- patterns[j]
+        replacement <- paste0(page.variables[[j]], collapse = "\n")
+        new.html <- gsub(pattern, replacement, new.html, fixed = TRUE)
+    }
+    new.html
+}
+
+new.html.files <- lapply(seq_along(html.files), use_template, parsed, html.bodies, html.files)
+
+invisible(lapply(seq_along(new.html.files), write_back, new.html.files, temp.files.html))
+
+file.paths <- c("./index.html", temp.files.html)
+destinations <- paste0("./build/", c("./index.html", pages))
+destinations <- gsub(".md$|.Rmd$|.rmd$", ".html", destinations)
+
+files <- lapply(file.paths, readLines)
+
+## Replace in files
+replace_in_file <- function(file, variables) {
+    new.file <- file
+    for (variable.name in names(variables)) {
+        variable <- variables[[variable.name]]
+        pattern <- paste0("{{", variable.name, "}}")
+        new.file <- gsub(pattern, variable, new.file, fixed = TRUE)
+    }
+    new.file
+}
+
+new.files <- lapply(files, replace_in_file, variables)
+
+invisible(lapply(dirs, function(dir) dir.create(paste0("./build/", dir), showWarnings = FALSE)))
+
+write_to_build <- function(i, files, destinations) {
+    file <- files[[i]]
+    destination <- destinations[i]
+    writeLines(file, destination)
+    invisible(file)
+}
+
+invisible(lapply(seq_along(new.files), write_to_build, new.files, destinations))
+
+dirs <- c("scripts", "content")
+files <- sapply(dirs, list.files, full.names = TRUE)
+for (file in files) file.copy(file, "build", overwrite = TRUE)
+
+## Clean up
+invisible(lapply(c(temp.files, temp.files.html), file.remove))
+
+
+
+
+
+
+
+
+
+

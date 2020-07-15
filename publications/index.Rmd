@@ -1,0 +1,11 @@
+---
+title: Publications
+subtitle: All our published work
+template: page.html
+hero-class: is-info
+---
+
+```{r, echo=FALSE, results="asis"}
+install.packages("bib2df")
+
+```
