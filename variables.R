@@ -1,8 +1,9 @@
 full.path <- "https://titco.github.io/titco.org/"
-local.path <- "file:///home/martin/projects/titco.org/docs/"
+## full.path <- "file:///home/martin/projects/titco.org/docs/"
 variables <- list(head = "head.html",
                   navbar = "navbar.html",
                   footer = "footer.html",
+                  app.link = paste0("src=\"", full.path, "app.js\""),
                   logo.link = paste0("src=\"", full.path, "titco-logo.svg\""),
                   home.link = paste0("href=\"", full.path, "index.html\""),
                   about.link = paste0("href=\"", full.path, "index.html#about\""),
