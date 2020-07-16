@@ -5,7 +5,25 @@ template: page.html
 hero-class: is-info
 ---
 
-```{r, echo=FALSE, results="asis"}
-install.packages("bib2df")
-
+```{r, echo=FALSE, include=FALSE}
+publications.data <- bib2df::bib2df("publications.bib")
+publications.data <- publications.data[order(publications.data$YEAR, decreasing = TRUE), ]
+format_publication <- function(publication) {
+    x <- with(publication,
+              paste0("<section class=\"section\">\n",
+                     "<div class=\"container\">\n",
+                     "<p><strong>", TITLE, "</strong></p>\n",
+                     "<p>", paste0(unlist(AUTHOR), collapse = ", "), "</p>\n",
+                     "<p>", JOURNAL, " ", YEAR, " ",
+                     "<a href=\"", URL, "\">", DOI , "</a></p>\n",
+                     "</div>",
+                     "</section>\n"))
+    x
+}
+publications <- apply(publications.data, 1, format_publication)
 ```
+
+```{r, echo=FALSE, results="asis"}
+cat(unlist(paste0(publications, collapse = "\n")))
+```
+

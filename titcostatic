@@ -31,7 +31,7 @@ dirs <- dirs[!grepl(paste0(exclude, collapse = "|"), dirs)]
 
 ## Get section pages
 ignore <- c("*~$")
-pages <- unlist(lapply(dirs, list.files, full.names = TRUE))
+pages <- unlist(lapply(dirs, list.files, pattern = ".Rmd$|.md$", full.names = TRUE))
 pages <- pages[!grepl(paste0(ignore, collapse = "|"), pages)]
 
 ## Render pages
