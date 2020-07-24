@@ -87,7 +87,7 @@
 	<!-- Contact section -->
 	<section class="hero is-fullheight" id="contact">
 	    <div class="hero-body">
-		<div class="container px-6">
+		<div class="kwes-form container px-6">
 		    <h1 class="title">
 			Contact
 		    </h1>
@@ -95,18 +95,18 @@
 		    <h2 class="subtitle">
 			Get in touch!
 		    </h2>
-		    <form action="scripts/action_page.php">
+		    <form method="POST" action="https://kwes.io/api/foreign/forms/4q9mU3Tp08wO1tsl7YL7">
 			<div class="field">
 			    <label class="label">Name</label>
 			    <div class="control">
-				<input class="input" type="text" placeholder="Your name here">
+				<input class="input" type="text" placeholder="Your name here" name="name">
 			    </div>
 			</div>
 
 			<div class="field">
 			    <label class="label">Email</label>
 			    <div class="control has-icons-left has-icons-right">
-				<input class="input" type="email" placeholder="me@example.com">
+				<input class="input" type="email" placeholder="me@example.com" name="email">
 				<span class="icon is-small is-left">
 				    <i class="fas fa-envelope"></i>
 				</span>
@@ -116,14 +116,14 @@
 			<div class="field">
 			    <label class="label">Subject</label>
 			    <div class="control">
-				<input class="input" type="text" placeholder="Subject here">
+				<input class="input" type="text" placeholder="Subject here" name="subject">
 			    </div>
 			</div>
 
 			<div class="field">
 			    <label class="label">Message</label>
 			    <div class="control">
-				<textarea class="textarea" placeholder="Textarea"></textarea>
+				<textarea class="textarea" placeholder="Textarea" name="message"></textarea>
 			    </div>
 			</div>
 
