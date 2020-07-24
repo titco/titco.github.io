@@ -1,5 +1,5 @@
-full.path <- "https://titco.github.io/titco.org/"
-## full.path <- "file:///home/martin/projects/titco.org/docs/"
+## full.path <- "https://titco.github.io/titco.org/"
+full.path <- "file:///home/martin/projects/titco.org/docs/"
 variables <- list(head = "head.html",
                   navbar = "navbar.html",
                   footer = "footer.html",
